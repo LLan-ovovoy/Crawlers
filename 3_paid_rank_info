@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jul 31 22:05:24 2020
+
+@author: caoyanan
+"""
+
+import urllib.request, urllib.parse, urllib.error
+from bs4 import BeautifulSoup 
+import re
+import csv
+import codecs
+
+
+app_rank_info_T = [["Rank","Title","Category","Total Rating","Installs","Average Rating","Growth(30 days)","Growth(60 days)","Price","URL"]]
+for j in range(1,500,20):
+    rank_address = 'https://www.androidrank.org/android-most-popular-google-play-apps?start='+str(j)+'&sort=0&price=paid&category=all'
+    url = rank_address
+    uh = urllib.request.urlopen(url)
+    print('Retrieving', url)
+    data = uh.read()
+    content_rank = data.decode()
+    soup = BeautifulSoup(content_rank, "lxml")
+    info = soup.select('td')
+    #print(info[0])
+    adds_app = re.findall(r'<td style="text-align:left;"><a href="(.*?)">', str(content_rank))
+    for a in range(0,len(info),9):
+        app_rank_info = [info[a].get_text(), info[a+1].get_text(), '', info[a+3].get_text(),
+                         info[a+4].get_text(), info[a+5].get_text(), info[a+6].get_text(), info[a+7].get_text(),
+                         info[a+8].get_text(), adds_app[int(a/9)]]
+        app_rank_info_T.append(app_rank_info)
+
+        
+    filename = '/Users/caoyanan/Desktop/canada/apps/app_paid_ranking.csv'
+    file_csv = codecs.open(filename, 'w', encoding='utf-8-sig')
+    writer = csv.writer(file_csv)
+    for d in app_rank_info_T:
+        #print(d)
+        writer.writerow(d)
+    file_csv.close()
+
