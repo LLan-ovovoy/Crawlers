@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug 17 23:58:48 2020
+
+@author: caoyanan
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug 17 23:35:21 2020
+
+@author: caoyanan
+"""
+
+
+import urllib.request, urllib.parse, urllib.error
+from bs4 import BeautifulSoup 
+#import csv
+#import codecs
+#import time
+import re
+
+#%%
+
+address = 'https://play.google.com/store/apps/collection/cluster?clp=ogoeCBEqAggIMhYKEGNvbS5oZy50b3duc21lbjcQARgD:S:ANO1ljIM0qY&gsr=CiGiCh4IESoCCAgyFgoQY29tLmhnLnRvd25zbWVuNxABGAM%3D:S:ANO1ljLRa9A'
+
+#outputpath=open("/Users/caoyanan/Desktop/canada/apps/catogery.csv",'a') 
+
+#%% 整个网页
+url = address
+uh = urllib.request.urlopen(url)
+print('Retrieving', url)
+data = uh.read()
+
+content = data.decode()
+print(content)
+
+soup = BeautifulSoup(content, "lxml")
+
+#%%
+
+inappinfo = soup.select( 'div[class="bSIuKf"]')
+inappprice = soup.select( 'span[class="htlgb"]')
+
+
+print(inappinfo[0].get_text())
+
+for i in range(0,len(inappprice),2):
+    print(inappprice[i].get_text())
+
+
+#%%
+    
+similist = re.findall(r'track:click" href="(.*?)">See', str(content))
+simiadd = "https://play.google.com"+str(similist[0])
+
+#%%
+url = simiadd
+uh = urllib.request.urlopen(url)
+print('Retrieving', url)
+data = uh.read()
+
+content = data.decode()
+print(content)
+
+soup = BeautifulSoup(content, "lxml")
+
+#%%
+simiapp = soup.select( 'div[class="WsMG1c nnK0zc"]')
+print(simiapp)
+
+
+#%%    
+    
+<div class="wXUyZd"><a href="/store/apps/details?id=com.hg.townsmen6"
+    <div class="WsMG1c nnK0zc"
+    
+    
+    
+path = open('/Users/caoyanan/Desktop/canada/appbrain.txt','a') 
+for i in range(0,len(update)):
+    print(update[i].get_text().replace('\n' , '_'), file = path)
+path.close()
