@@ -1,0 +1,154 @@
+import urllib.request, urllib.parse, urllib.error
+from bs4 import BeautifulSoup 
+import re
+
+
+#%% the address of websites
+address = 'https://yeying2010.haodf.com/present/presentnavigation'
+
+# For anticrawler
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+req = urllib.request.Request(url = address, headers=headers)  
+data = urllib.request.urlopen(req).read() 
+
+content = data.decode('GBK') # GBK解码
+print(content)
+
+#%% find content
+
+soup = BeautifulSoup(content, "lxml")
+
+name = soup.select('h1[class="doctor-name"]')
+
+position = soup.select('span[class="positon"]')
+faculty = soup.select('p[class="doctor-faculty"]')
+
+label_name = soup.select('span[class="sta-label"]')
+label_stat = soup.select('i[class="sta-num"]')
+
+#%%
+
+gift_stat = re.findall(r'<strong class="orange1 fy pl5 pr5">(.*?)</strong>', str(content))
+gift = re.findall(r'<p class="gift_name">(.*?)<span class="orange1">', str(content))
+gift_num = re.findall(r'<span class="orange1">(.*?)</span>', str(content))
+
+#%%
+outputpath=open("/Users/caoyanan/Desktop/canada/tests.txt",'a') 
+
+print('address:',address)
+
+sm1 = [[name[0].get_text()]]
+for i in range(0, len(position)):
+    a = [position[i].get_text().replace('\n', '', 1).replace('\n', ', ', len(position)).replace(' ' , ''),]
+    sm1.append(a)
+    
+for i in range(0, len(faculty)):
+    a= [faculty[i].get_text().replace('\n', '', 1).replace('\n', ', ', len(faculty)).replace('\n', '').replace(' ' , '')]
+    sm1.append(a)
+    
+for i in range(0,len(label_name)):
+    a = [label_name[i].get_text()+label_stat[i].get_text()]
+    sm1.append(a)
+    
+b= ['患者数'+gift_stat[0],'礼物数'+gift_stat[1]]
+sm1.append(b)
+'''
+gift = []
+for i in range(1, len(gift)):
+    a = ["gift", i,': ', gift[i].replace("(",""), " - ", gift_num[i]]
+    gift.append(a)
+sm1.append(gift)
+'''
+print(sm1)
+
+#%%Name of Articles
+
+address = 'https://yeying2010.haodf.com/lanmu'
+
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+req = urllib.request.Request(url = address, headers=headers)  
+data = urllib.request.urlopen(req).read() 
+
+content = data.decode('GBK') # GBK解码
+
+soup = BeautifulSoup(content, "lxml")
+
+art = soup.select('a[class="art_t"]')
+art_r = soup.select('p[class="read_article"]')
+
+sm2 = []
+for i in range(0, len(art_r)):
+    a = [art[i].get_text()+":", art_r[i].get_text().replace('\n', '').replace(' ' , '')]
+    sm2.append(a)
+print(sm2)
+
+#%%患者问诊
+
+address = 'https://yeying2010.haodf.com/thread/index?p_type=all&p=2'
+
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+req = urllib.request.Request(url = address, headers=headers)  
+data = urllib.request.urlopen(req).read() 
+
+content = data.decode('GBK') # GBK解码
+#print(content)
+
+soup = BeautifulSoup(content, "lxml")
+
+brief = soup.select('td')
+
+sm3 = []
+for i in range(6, len(brief),6):
+    a = [brief[i+2].get_text().replace('\n', ''),brief[i+3].get_text().replace('\n', ''),
+         brief[i+4].get_text().replace('\n', '').replace(' ' , ''),brief[i+5].get_text()[0:11].replace('\n', '')]
+    sm3.append(a)
+print(sm3)
+    
+
+
+#%%具体问诊案例
+address = 'https://www.haodf.com/doctorteam/flow_team_6480490343.htm'
+
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+req = urllib.request.Request(url = address, headers=headers)  
+data = urllib.request.urlopen(req).read() 
+
+content = data.decode('GBK') # GBK解码
+#print(content)
+
+soup = BeautifulSoup(content, "lxml")
+
+charge = soup.select('h2[class="f-c-r-w-title"]')
+item = soup.select('h4[class="f-c-r-w-subtitle"]')
+disc = soup.select('p[class="f-c-r-w-text"]')
+
+sm4 = [[charge[0].get_text().replace('\n', '').replace(' ' , '')]]
+for i in range(0,len(item)):
+    a = [item[i].get_text(),disc[i].get_text()]
+    sm4.append(a)
+print(sm4)
+
+
+#%%
+address = 'https://yeying2010.haodf.com/'
+
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+req = urllib.request.Request(url = address, headers=headers)  
+data = urllib.request.urlopen(req).read() 
+
+content = data.decode('GBK') # GBK解码
+#print(content)
+
+soup = BeautifulSoup(content, "lxml")
+#%%
+path = open('/Users/caoyanan/Desktop/canada/sample.txt','a') 
+print(sm1,"\n",sm2,"\n",sm3,"\n",sm4, file = path)
+path.close()
+
+
+
+
+
+
+
+
