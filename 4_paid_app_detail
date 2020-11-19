@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul 7 10:54:21 2020
+
+@author: caoyanan
+"""
+
+import urllib.request, urllib.parse, urllib.error
+from bs4 import BeautifulSoup
+import re
+import csv
+import codecs
+import time
+
+#%%
+
+
+with open('/Users/caoyanan/Desktop/canada/apps/app_paid_ranking.csv','r') as csvfile:
+    reader = csv.reader(csvfile)
+    app_detail_address = [row[9]for row in reader]
+with open('/Users/caoyanan/Desktop/canada/apps/app_paid_ranking.csv','r') as csvfile:
+    reader = csv.reader(csvfile)
+    app_name = [row[1]for row in reader]
+    #print(app_detail_address)
+
+n5 = len(app_detail_address)
+apps_info = [["Title","Developer","Category","Price","System","Total Rating","Growth(30 days)","Growth(60 days)",
+              "Average Rating","Install(achieved)","Install(estimated)","5 Star Ratings","4 Star Ratings",
+              "3 Star Ratings","2 Star Ratings","1 Star Ratings","Country Rankings","Total number of ratings",
+              "Total number of installs (*estimated)","Average rating","Market lead percentage","Rating distribution",
+              "Current rating distribution","Price history stats"]]
+for a in range(1,n5):
+    try:
+        address = 'https://www.androidrank.org'+app_detail_address[a]
+        url = address
+        uh = urllib.request.urlopen(url)
+        print('Retrieving', url)
+        data = uh.read()
+        content = data.decode()
+        soup = BeautifulSoup(content, "lxml")
+            
+        info_content = soup.select('td')
+        nation_rank = re.findall(r'<span title="Position(.*?). in (.*?)" class="flagholder">', str(content))
+        
+        app_detail = []
+        for i in range(0,16):
+            app_detail.append(info_content[i].get_text())
+        app_detail.append(nation_rank)
+        
+        chart = soup.find_all(text=re.compile("drawChartRankTotalData"))
+        string = str(chart)
+        data_str = []
+        split_chart_str = string.split(" = ")
+        for i in range(0,len(split_chart_str)):
+            data_str.append(split_chart_str[i].split("\\n")[0])
+            
+        raw_RankTotalData = data_str[1].replace(",];", "]").replace("new Date", "")
+        raw_DownloadsEstimationData = data_str[2].replace(",];", "]").replace("new Date", "")
+        raw_RankAvgData = data_str[3].replace(",];", "]").replace("new Date", "")
+        raw_PercentageData = data_str[4].replace(",];","]",).replace("new Date", "")
+        raw_RatingDistributionData = data_str[5].replace(",];", "]").replace("new Date", "")
+        raw_RatingPieData = data_str[6].replace("];", "]")
+        raw_PriceData = data_str[7].replace("];", "]")
+
+        RankTotalData = eval(raw_RankTotalData)
+        DownloadsEstimationData = eval(raw_DownloadsEstimationData)
+        RankAvgData = eval(raw_RankAvgData)
+        PercentageData = eval(raw_PercentageData)
+        RatingDistributionData = eval(raw_RatingDistributionData)
+        RatingPieData = eval(raw_RatingPieData)
+        PriceData = eval(raw_PriceData)
+
+        chart_info = [RankTotalData, DownloadsEstimationData, RankAvgData,
+                      PercentageData, RatingDistributionData, RatingPieData, PriceData]
+
+        for j in range(0,len(chart_info)):
+            app_detail.append(chart_info[j])
+            apps_info.append(app_detail)
+    
+        print('app '+str(a)+' in paid apps finished')
+
+        if a % 75 == 0:
+            print('sleeping...')
+            time.sleep(120)
+            print('stop sleeping')
+
+    except Exception as ex:
+        if str(ex) == 'HTTP Error 429: Too Many Requests':
+            print('Too many request. sleeping...')
+            time.sleep(180)
+            print('stop sleeping')
+            a -= 1
+            continue
+                
+        else:
+            print("Error (" + str(ex) + ") in app " + str(a) +" in catefory " + str(m) +". Skipping...")
+            apps_info.append([app_name[a],[str(ex)],category[m]])
+            continue
+
+filename = '/Users/caoyanan/Desktop/canada/apps/app_detail/app_paid_detail.csv'
+file_csv = codecs.open(filename, 'w', encoding='utf-8-sig')
+writer = csv.writer(file_csv)
+for d in apps_info:
+        #print(d)
+    writer.writerow(d)
+file_csv.close()
+
